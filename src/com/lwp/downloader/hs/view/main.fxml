@@ -19,11 +19,11 @@
                    <fx:include source="single_download.fxml"/>
                </content>
           </Tab>
-          <Tab closable="false" text="批量下载">
+        <!--  <Tab closable="false" text="批量下载">
                <content>
                     <fx:include source="multi_download.fxml"/>
                </content>
-          </Tab>
+          </Tab>-->
         </tabs>
       </TabPane>
    </children>
