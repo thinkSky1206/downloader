@@ -2,7 +2,9 @@ package com.lwp.downloader.hs.controller;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -64,52 +66,41 @@ public class SingleDownloadController {
 
     @FXML
     public void onCheckUrl(ActionEvent actionEvent) {
-        Task<String> urlParse = new Task<String>() {
+        Task<String> urlParseTask = new Task<String>() {
             @Override
             protected String call() throws Exception {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        checkBtn.setText("正在解析");
+                        checkBtn.setDisable(true);
+                    }
+                });
                 String url = urlText.getText();
                 try {
                     Document doc = Jsoup.connect(url).get();
                     Element video = doc.select("video").first();
-                    fileUrl = video.attr("src");
-                    checkBtn.setText("解析");
-                    return fileUrl;
-//                    if (StringUtil.isBlank(fileUrl)) {
-//                        showError("解析错误，请检查地址是否正确！");
-//                    } else
-//                        showSuc("解析成功，请点击下载按钮开始下载！");
-
+                    return video.attr("src");
                 } catch (IOException e) {
-//                    checkBtn.setText("解析");
-                    showError("解析错误，请检查地址是否正确！");
-                    return "";
+                    e.printStackTrace();
+                    return null;
                 }
             }
-
         };
 
-        if (StringUtil.isBlank(urlParse.getValue())) {
-            showError("解析错误，请检查地址是否正确！");
-        } else
-            showSuc("解析成功，请点击下载按钮开始下载！");
-        new Thread(urlParse).start();
-
-  /*      checkBtn.setText("正在解析");
-        String url = urlText.getText();
-        try {
-            Document doc = Jsoup.connect(url).get();
-            Element video = doc.select("video").first();
-            fileUrl = video.attr("src");
-            checkBtn.setText("解析");
-            if (StringUtil.isBlank(fileUrl)) {
-                showError("解析错误，请检查地址是否正确！");
-            } else
-                showSuc("解析成功，请点击下载按钮开始下载！");
-
-        } catch (IOException e) {
-            checkBtn.setText("解析");
-            showError("解析错误，请检查地址是否正确！");
-        }*/
+        urlParseTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent t) {
+                checkBtn.setText("解析");
+                checkBtn.setDisable(false);
+                fileUrl = urlParseTask.getValue();
+                if (StringUtil.isBlank(fileUrl)) {
+                    showError("解析错误，请检查地址是否正确！");
+                } else
+                    showSuc("解析成功，请点击下载按钮开始下载！");
+            }
+        });
+        new Thread(urlParseTask).start();
     }
 
     @FXML
@@ -126,9 +117,11 @@ public class SingleDownloadController {
                 int totalSize;
 
                 public void onUpdate(int bytes, int totalDownloaded) {
+//                    System.out.println("下载：" + bytes);
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
+                            downBtn.setDisable(true);
                             downBtn.setText("正在下载 ");
                         }
                     });
@@ -143,6 +136,7 @@ public class SingleDownloadController {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
+                            downBtn.setDisable(false);
                             msgLabel.setText("");
                             downBtn.setText("下载");
                             showDownSuc("下载成功！");
