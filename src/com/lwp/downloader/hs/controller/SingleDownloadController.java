@@ -58,6 +58,7 @@ public class SingleDownloadController {
     @FXML
     public void initialize() {
         typeCombo.getItems().addAll("快手", "火山小视频");
+//        typeCombo.setItems("快手");
         File outDir = new File("C:\\video\\");
         if (!outDir.exists()) {
             outDir.mkdir();
@@ -117,7 +118,6 @@ public class SingleDownloadController {
                 int totalSize;
 
                 public void onUpdate(int bytes, int totalDownloaded) {
-//                    System.out.println("下载：" + bytes);
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
