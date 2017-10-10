@@ -58,7 +58,7 @@ public class SingleDownloadController {
     @FXML
     public void initialize() {
         typeCombo.getItems().addAll("快手", "火山小视频");
-//        typeCombo.setItems("快手");
+        typeCombo.getSelectionModel().selectFirst();
         File outDir = new File("C:\\video\\");
         if (!outDir.exists()) {
             outDir.mkdir();
@@ -67,6 +67,7 @@ public class SingleDownloadController {
 
     @FXML
     public void onCheckUrl(ActionEvent actionEvent) {
+
         Task<String> urlParseTask = new Task<String>() {
             @Override
             protected String call() throws Exception {
@@ -78,12 +79,16 @@ public class SingleDownloadController {
                     }
                 });
                 String url = urlText.getText();
+                if (StringUtil.isBlank(url)) {
+                    return null;
+                }
                 try {
                     Document doc = Jsoup.connect(url).get();
+                    String selectedItem = typeCombo.getValue().toString();
+                    System.out.print(selectedItem);
                     Element video = doc.select("video").first();
                     return video.attr("src");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
                     return null;
                 }
             }
@@ -101,6 +106,7 @@ public class SingleDownloadController {
                     showSuc("解析成功，请点击下载按钮开始下载！");
             }
         });
+
         new Thread(urlParseTask).start();
     }
 
