@@ -1,4 +1,4 @@
-package com.lwp.downloader.hs.controller;
+package com.lwp.downloader.controller;
 
 import javafx.fxml.Initializable;
 

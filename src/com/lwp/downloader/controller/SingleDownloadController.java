@@ -1,4 +1,4 @@
-package com.lwp.downloader.hs.controller;
+package com.lwp.downloader.controller;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -6,7 +6,6 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import jddl.DirectDownloader;
@@ -16,15 +15,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ResourceBundle;
+
+import com.lwp.downloader.Constants;
 
 /**
  * Author: liuwuping
@@ -57,7 +53,7 @@ public class SingleDownloadController {
 
     @FXML
     public void initialize() {
-        typeCombo.getItems().addAll("快手", "火山小视频");
+        typeCombo.getItems().addAll(Constants.SOURCE_KUAISHOU, Constants.SOURCE_HUOSHAN);
         typeCombo.getSelectionModel().selectFirst();
         File outDir = new File("C:\\video\\");
         if (!outDir.exists()) {
@@ -83,11 +79,22 @@ public class SingleDownloadController {
                     return null;
                 }
                 try {
-                    Document doc = Jsoup.connect(url).get();
                     String selectedItem = typeCombo.getValue().toString();
                     System.out.print(selectedItem);
-                    Element video = doc.select("video").first();
-                    return video.attr("src");
+                    Document doc = null;
+                    if (selectedItem.equals(Constants.SOURCE_KUAISHOU)) {
+                        doc = Jsoup.connect(url).get();
+                        Element video = doc.select("video").first();
+                        return video.attr("src");
+                    } else if (selectedItem.equals(Constants.SOURCE_HUOSHAN)) {
+                        doc = Jsoup.connect(url).get();
+                        Element script = doc.select("script").get(4);
+                        String scriptText = script.html();
+                        String videoUrl = scriptText.substring(scriptText.indexOf(".create(") + 8, scriptText.indexOf("}}});") + 3);
+
+                        return videoUrl;
+                    }
+                    return null;
                 } catch (Exception e) {
                     return null;
                 }
